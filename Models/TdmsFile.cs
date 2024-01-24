@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace SyncfusionLayout.Models;
 
 public partial class TdmsFile

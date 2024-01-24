@@ -8,7 +8,7 @@
 @using Syncfusion.Blazor.DropDowns
 @using System.Text;
 @using System.Text.Json;
-@inject IDatabase<TdmsFile> TdmsFileService
+@* @inject IDatabase<TdmsFile> TdmsFileService *@
 @rendermode InteractiveServer
 
 <PageTitle>SyncfusionChart</PageTitle>
@@ -16,9 +16,12 @@
 
 <div id="listbox-control">
     <h4>Select a TDMS File:</h4>
-    <SfListBox TItem="TdmsFile" TValue="string" DataSource="@tdmsFiles" Change="@OnSelectFile">
-        <ListBoxFieldSettings Text="FileName" Value="Id"></ListBoxFieldSettings>
-    </SfListBox>
+    <ul>
+        @foreach (var file in tdmsFiles)
+        {
+            <li @onclick="() => OnFileClick(file)">@file.FileName</li>
+        }
+    </ul>
 </div>
 
 <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
@@ -63,17 +66,53 @@
 </style>
 
 @code {
- 
+
     private List<TdmsFile> tdmsFiles;
     private List<ChartData> chartData;
     private string jsonContent;
     private List<double> dataList = new List<double>();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        tdmsFiles = await TdmsFileService.GetAsync();
+        tdmsFiles = new List<TdmsFile>(); // 리스트 초기화
+        GenerateRandomTdmsFiles();
     }
 
+    private void GenerateRandomTdmsFiles()
+    {
+        Random random = new Random();
+
+        // tdmsFiles 리스트 초기화
+        tdmsFiles = new List<TdmsFile>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            var testData = new List<double>();
+
+            // 12800개의 랜덤 double 값을 생성
+            for (int j = 0; j < 12800; j++)
+            {
+                double randomValue = (random.NextDouble() * 2) - 1; // -1과 1 사이의 값
+                testData.Add(randomValue);
+            }
+
+            // 새로운 TdmsFile 객체를 리스트에 추가
+            tdmsFiles.Add(new TdmsFile
+                {
+                    Id = i + 1,
+                    FileName = $"File_{i + 1}",
+                    Data = testData
+                });
+        }
+    }
+    private void OnFileClick(TdmsFile file)
+    {
+        if (file != null && file.Data != null)
+        {
+            chartData = ConvertToChartData(file.Data);
+            StateHasChanged(); // 차트 데이터 갱신
+        }
+    }
     private async Task OnSelectFile(ChangeEventArgs args)
     {
         if (args.Value != null)
@@ -83,59 +122,12 @@
 
             if (selectedFile != null)
             {
-                jsonContent = ConvertToBase64(selectedFile.Data);
-                ParseJsonData(jsonContent);
-                chartData = ConvertToChartData(dataList);
-                StateHasChanged(); // 차트 데이터를 갱신
+                // 선택된 파일의 데이터를 차트 데이터로 변환합니다.
+                chartData = ConvertToChartData(selectedFile.Data);
+                // UI를 갱신하여 변경된 차트 데이터를 반영합니다.
+                StateHasChanged();
             }
         }
-    }
-
-    // void Test()
-    // {
-    //     int arraySize = 12800;
-    //     double[] randomValues = new double[arraySize];
-
-    //     Random random = new Random();
-    //     List<double> testData = new List<double>();
-
-    //     for (int i = 0; i < arraySize; i++)
-    //     {
-    //         // -1에서 1 사이의 랜덤한 double 값 생성
-    //         double randomValue = (random.NextDouble() * 2) - 1;
-    //         randomValues[i] = randomValue;
-    //         testData.Add(randomValues[i]);
-    //     }
-    //     chartData = ConvertToChartData(testData);
-    //     xValue = chartData.Count;
-    // }
-
-    private void ParseJsonData(string json)
-    {
-        try
-        {
-            var jsonDoc = JsonDocument.Parse(json);
-            var root = jsonDoc.RootElement;
-            if (root.TryGetProperty("Data", out var dataElement) && dataElement.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in dataElement.EnumerateArray())
-                {
-                    if (item.TryGetDouble(out double value))
-                    {
-                        dataList.Add(value);
-                    }
-                }
-            }
-        }
-        catch (JsonException ex)
-        {
-            Console.WriteLine($"JSON parsing error: {ex.Message}");
-        }
-    }
-
-    private string ConvertToBase64(byte[] data)
-    {
-        return Encoding.UTF8.GetString(data);
     }
 
     private List<ChartData> ConvertToChartData(List<double> dataList)
@@ -150,9 +142,22 @@
                     Time = time,
                     Value = value
                 });
-            time += 1;
+            time += 1; // 시간 간격 증가
         }
 
         return chartDataList;
+    }
+
+    public class TdmsFile
+    {
+        public int Id { get; set; }
+        public string FileName { get; set; }
+        public List<double> Data { get; set; }
+    }
+
+    public class ChartData
+    {
+        public double Time { get; set; }
+        public double Value { get; set; }
     }
 } 
