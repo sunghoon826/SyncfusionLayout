@@ -63,28 +63,34 @@
 </style>
 
 @code {
-    private string jsonContent;
-    private List<double> dataList = new List<double>();
+ 
     private List<TdmsFile> tdmsFiles;
     private List<ChartData> chartData;
-    // int xValue = 0;
+    private string jsonContent;
+    private List<double> dataList = new List<double>();
 
     protected override async Task OnInitializedAsync()
     {
         tdmsFiles = await TdmsFileService.GetAsync();
     }
+
     private async Task OnSelectFile(ChangeEventArgs args)
     {
-        var selectedId = Convert.ToInt32(args.Value.ToString());
-        var selectedFile = tdmsFiles.FirstOrDefault(f => f.Id == selectedId);
-
-        if (selectedFile != null)
+        if (args.Value != null)
         {
-            jsonContent = ConvertToBase64(selectedFile.Data);
-            ParseJsonData(jsonContent);
-            chartData = ConvertToChartData(dataList);
+            var selectedId = Convert.ToInt32(args.Value.ToString());
+            var selectedFile = tdmsFiles.FirstOrDefault(f => f.Id == selectedId);
+
+            if (selectedFile != null)
+            {
+                jsonContent = ConvertToBase64(selectedFile.Data);
+                ParseJsonData(jsonContent);
+                chartData = ConvertToChartData(dataList);
+                StateHasChanged(); // 차트 데이터를 갱신
+            }
         }
     }
+
     // void Test()
     // {
     //     int arraySize = 12800;
