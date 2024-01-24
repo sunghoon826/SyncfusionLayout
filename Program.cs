@@ -1,12 +1,18 @@
 ﻿using Syncfusion.Blazor;
-using SyncfusionLayout;
 using SyncfusionLayout.Components;
+using SyncfusionLayout.Interfaces;
+using SyncfusionLayout.Models;
+using SyncfusionLayout.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<TdmsFilesContext>();
+builder.Services.AddScoped<IDatabase<TdmsFile>, TdmsFileService>();
+
 builder.Services.AddSyncfusionBlazor();
 
 var app = builder.Build();
