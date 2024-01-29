@@ -30,11 +30,14 @@
         <ChartAreaBorder Width="0" />
     </ChartArea>
     <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
-        @if (isClicked) @* 클릭 시 스트립라인 표시 *@
+        @if (isClicked)
         {
-            <ChartStriplines>
-                <ChartStripline Start="@clickedPosition" Size="1" SizeType="SizeType.Pixel" Color="red" />
-            </ChartStriplines>
+            foreach (var position in striplinePositions)
+            {
+                <ChartStriplines>
+                    <ChartStripline Start="@position" Size="1" SizeType="SizeType.Pixel" Color="red"></ChartStripline>
+                </ChartStriplines>
+            }
         }
         <ChartAxisMajorGridLines Width="0" />
         <ChartAxisMajorTickLines Width="0" />
@@ -91,7 +94,7 @@
     private List<double> dataList = new List<double>();
     private double clickedPosition; // 클릭된 위치의 X축 값 저장
     private bool isClicked = false; // 클릭 여부 확인
-
+    private List<double> striplinePositions = new List<double>(); // Stripline 위치를 저장하는 리스트
   
     protected override async Task OnInitializedAsync()
     {
@@ -123,13 +126,29 @@
     private void OnChartMouseClick(ChartMouseEventArgs args)
     {
         double clickedXValue = Convert.ToDouble(args.AxisData["PrimaryXAxis"]);
-        // 클릭한 위치에 가장 가까운 데이터 포인트의 인덱스를 찾습니다.
         int closestIndex = FindClosestDataPointIndex(clickedXValue);
-        // 찾은 인덱스를 x축 값으로 사용합니다.
-        clickedPosition = closestIndex;
+        CalculateStriplinePositions(closestIndex); // Stripline 위치 계산
         isClicked = true;
         StateHasChanged();
     }
+    private void CalculateStriplinePositions(int closestIndex)
+    {
+        striplinePositions.Clear(); // 이전에 계산된 Stripline 위치를 초기화
+
+        int totalStriplines = 14; // 왼쪽 7개, 오른쪽 7개, 총 14개
+        int half = totalStriplines / 2;
+        int gap = 1000; // Stripline 간의 간격을 100으로 설정
+
+        for (int i = -half; i <= half; i++)
+        {
+            int index = closestIndex + (i * gap); // 각 Stripline 위치에 간격을 곱해줌
+            if (index >= 0 && index < dataList.Count) // 인덱스가 데이터 리스트의 범위 내에 있는지 확인
+            {
+                striplinePositions.Add(index); // Stripline 위치 추가
+            }
+        }
+    }
+
     private int FindClosestDataPointIndex(double clickedXValue)
     {
         int closestIndex = 0;
