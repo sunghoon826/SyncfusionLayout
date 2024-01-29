@@ -25,10 +25,17 @@
     </ul>
 </div>
 <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
+    <ChartEvents ChartMouseClick="@OnChartMouseClick" /> @* ChartMouseClick 이벤트 추가 *@
     <ChartArea>
         <ChartAreaBorder Width="0" />
     </ChartArea>
     <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
+        @if (isClicked) @* 클릭 시 스트립라인 표시 *@
+        {
+            <ChartStriplines>
+                <ChartStripline Start="@clickedPosition" Size="1" SizeType="SizeType.Pixel" Color="red" />
+            </ChartStriplines>
+        }
         <ChartAxisMajorGridLines Width="0" />
         <ChartAxisMajorTickLines Width="0" />
         <ChartAxisCrosshairTooltip Enable="true" />
@@ -82,7 +89,10 @@
     private List<TdmsFile> tdmsFiles;
     private List<ChartData> chartData;
     private List<double> dataList = new List<double>();
+    private double clickedPosition; // 클릭된 위치의 X축 값 저장
+    private bool isClicked = false; // 클릭 여부 확인
 
+  
     protected override async Task OnInitializedAsync()
     {
         try
@@ -104,13 +114,39 @@
     {
         if (file != null && file.Data != null)
         {
-            var jsonString = ConvertToUtf8String(file.Data);
+            var jsonString = Encoding.UTF8.GetString(file.Data);
             ParseJsonData(jsonString);
             chartData = ConvertToChartData(dataList);
             StateHasChanged();
         }
     }
+    private void OnChartMouseClick(ChartMouseEventArgs args)
+    {
+        double clickedXValue = Convert.ToDouble(args.AxisData["PrimaryXAxis"]);
+        // 클릭한 위치에 가장 가까운 데이터 포인트의 인덱스를 찾습니다.
+        int closestIndex = FindClosestDataPointIndex(clickedXValue);
+        // 찾은 인덱스를 x축 값으로 사용합니다.
+        clickedPosition = closestIndex;
+        isClicked = true;
+        StateHasChanged();
+    }
+    private int FindClosestDataPointIndex(double clickedXValue)
+    {
+        int closestIndex = 0;
+        double minDifference = double.MaxValue;
 
+        for (int i = 0; i < dataList.Count; i++)
+        {
+            double difference = Math.Abs(i - clickedXValue); // 인덱스와 클릭된 x축 값의 차이를 계산
+            if (difference < minDifference)
+            {
+                minDifference = difference;
+                closestIndex = i; // 가장 가까운 인덱스를 업데이트
+            }
+        }
+
+        return closestIndex;
+    }
     private string ConvertToUtf8String(byte[] data)
     {
         return Encoding.UTF8.GetString(data);
