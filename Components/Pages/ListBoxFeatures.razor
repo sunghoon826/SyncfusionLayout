@@ -4,6 +4,7 @@
 @using SyncfusionLayout.Models
 @using Syncfusion.Blazor
 @using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.DropDowns
 @using System.Text;
@@ -56,6 +57,10 @@
         </ChartSeries>
     </ChartSeriesCollection>
 </SfChart>
+<div>
+    <SfTextBox @bind-Value="@striplineGap" Input="@TestCode" Placeholder="Enter Stripline Gap"></SfTextBox>
+    <SfTextBox @bind-Value="@striplinesEachSide" Input="@TestCode" Placeholder="Enter Striplines Each Side"></SfTextBox>
+</div>
 <style>
     #listbox-control {
         width: 350px;
@@ -88,6 +93,8 @@
         }
     }
 </style>
+
+
 @code {
     private List<TdmsFile> tdmsFiles;
     private List<ChartData> chartData;
@@ -95,7 +102,9 @@
     private double clickedPosition; // 클릭된 위치의 X축 값 저장
     private bool isClicked = false; // 클릭 여부 확인
     private List<double> striplinePositions = new List<double>(); // Stripline 위치를 저장하는 리스트
-  
+    private string striplineGap = "100"; // Default gap as string
+    private string striplinesEachSide = "7"; // Default number of striplines each side as string
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -126,25 +135,29 @@
     private void OnChartMouseClick(ChartMouseEventArgs args)
     {
         double clickedXValue = Convert.ToDouble(args.AxisData["PrimaryXAxis"]);
-        int closestIndex = FindClosestDataPointIndex(clickedXValue);
-        CalculateStriplinePositions(closestIndex); // Stripline 위치 계산
+        CalculateStriplinePositions(clickedXValue);
         isClicked = true;
         StateHasChanged();
     }
-    private void CalculateStriplinePositions(int closestIndex)
+    private void ApplyStriplineSettings()
+    {
+        isClicked = true;
+        StateHasChanged();
+    }
+
+    private void CalculateStriplinePositions(double clickedPosition)
     {
         striplinePositions.Clear(); // 이전에 계산된 Stripline 위치를 초기화
+        int gap = int.Parse(striplineGap); // 사용자가 입력한 Stripline 간격
+        int sides = int.Parse(striplinesEachSide); // 사용자가 입력한 각 쪽에 생성할 Stripline의 개수
 
-        int totalStriplines = 14; // 왼쪽 7개, 오른쪽 7개, 총 14개
-        int half = totalStriplines / 2;
-        int gap = 1000; // Stripline 간의 간격을 100으로 설정
-
-        for (int i = -half; i <= half; i++)
+        for (int i = -sides; i <= sides; i++)
         {
-            int index = closestIndex + (i * gap); // 각 Stripline 위치에 간격을 곱해줌
-            if (index >= 0 && index < dataList.Count) // 인덱스가 데이터 리스트의 범위 내에 있는지 확인
+            double position = clickedPosition + (i * gap);
+            // Stripline의 위치가 차트의 x축 범위 내에 있는지 확인
+            if (position >= 0 && position <= 12800) // x축의 최소값과 최대값
             {
-                striplinePositions.Add(index); // Stripline 위치 추가
+                striplinePositions.Add(position); // 범위 내에 있는 Stripline 위치만 추가
             }
         }
     }
@@ -206,7 +219,10 @@
         }
         return chartDataList;
     }
-
+    private void TestCode(InputEventArgs args)
+    {
+        StateHasChanged();
+    }
     public class ChartData
     {
         public double Time { get; set; }
