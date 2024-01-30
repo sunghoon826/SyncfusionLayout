@@ -1,4 +1,5 @@
 ﻿@page "/syncfusion"
+@using Syncfusion.Blazor.Navigations
 @using SyncfusionLayout.Interfaces
 @using SyncfusionLayout.Services
 @using SyncfusionLayout.Models
@@ -6,11 +7,9 @@
 @using Syncfusion.Blazor.Lists
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Inputs
-@using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.DropDowns
 @using System.Text;
 @using System.Text.Json;
-@using Microsoft.JSInterop;
 @inject IDatabase<TdmsFile> TdmsFileService
 @rendermode InteractiveServer
 
@@ -18,24 +17,31 @@
 <h3>SyncfusionChart</h3>
 
 <div id="container">
-    <div class="sample flex vertical-center">
-        <div class="padding">
-            <SfListView DataSource="@tdmsFiles" CssClass="e-list-template">
-                <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
-                <ListViewTemplates TValue="TdmsFile">
-                    <Template>
-                        @{
-                            TdmsFile currentData = (TdmsFile)context;
-                            <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
-                                <span class="e-list-item-header">@currentData.FileName</span>
-                            </div>
-                        }
-                    </Template>
-                </ListViewTemplates>
-            </SfListView>
-        </div>
+    <SfSidebar @ref="sidebarObj" Width="250px" Type="SidebarType.Over" @bind-IsOpen="SidebarToggle">
+        <ChildContent>
+            <div class="sidebar-content">
+                <h4>Select a TDMS File:</h4>
+                <SfListView DataSource="@tdmsFiles" CssClass="e-list-template">
+                    <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
+                    <ListViewTemplates TValue="TdmsFile">
+                        <Template>
+                            @{
+                                TdmsFile currentData = (TdmsFile)context;
+                                <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
+                                    <span class="e-list-item-header">@currentData.FileName</span>
+                                </div>
+                            }
+                        </Template>
+                    </ListViewTemplates>
+                </SfListView>
+            </div>
+        </ChildContent>
+    </SfSidebar>
+    <div id="sidebar-toggle">
+        <SfButton @onclick="Toggle" IsToggle="true" IsPrimary="true">Toggle Sidebar</SfButton>
     </div>
 </div>
+
 
 <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
     <ChartEvents ChartMouseClick="@OnChartMouseClick" /> @* ChartMouseClick 이벤트 추가 *@
@@ -117,6 +123,12 @@
     private string striplineGap = "100"; // Default gap as string
     private string striplinesEachSide = "7"; // Default number of striplines each side as string
     private TdmsFile Selected;
+
+    SfSidebar? sidebarObj;
+    public bool SidebarToggle = false;
+
+
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -144,6 +156,11 @@
             Selected = file;
             StateHasChanged();
         }
+    }
+
+    public void Toggle()
+    {
+        SidebarToggle = !SidebarToggle;
     }
     private void OnChartMouseClick(ChartMouseEventArgs args)
     {
