@@ -3,6 +3,7 @@
 @using SyncfusionLayout.Services
 @using SyncfusionLayout.Models
 @using Syncfusion.Blazor
+@using Syncfusion.Blazor.Lists
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Buttons
@@ -16,15 +17,26 @@
 <PageTitle>SyncfusionChart</PageTitle>
 <h3>SyncfusionChart</h3>
 
-<div id="listbox-control">
-    <h4>Select a TDMS File:</h4>
-    <ul>
-        @foreach (var file in tdmsFiles)
-        {
-            <li class="list-item" @onclick="() => OnFileClick(file)">@file.FileName</li>
-        }
-    </ul>
+<div id="container">
+    <div class="sample flex vertical-center">
+        <div class="padding">
+            <SfListView DataSource="@tdmsFiles" CssClass="e-list-template">
+                <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
+                <ListViewTemplates TValue="TdmsFile">
+                    <Template>
+                        @{
+                            TdmsFile currentData = (TdmsFile)context;
+                            <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
+                                <span class="e-list-item-header">@currentData.FileName</span>
+                            </div>
+                        }
+                    </Template>
+                </ListViewTemplates>
+            </SfListView>
+        </div>
+    </div>
 </div>
+
 <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
     <ChartEvents ChartMouseClick="@OnChartMouseClick" /> @* ChartMouseClick 이벤트 추가 *@
     <ChartArea>
@@ -104,7 +116,7 @@
     private List<double> striplinePositions = new List<double>(); // Stripline 위치를 저장하는 리스트
     private string striplineGap = "100"; // Default gap as string
     private string striplinesEachSide = "7"; // Default number of striplines each side as string
-
+    private TdmsFile Selected;
     protected override async Task OnInitializedAsync()
     {
         try
@@ -129,6 +141,7 @@
             var jsonString = Encoding.UTF8.GetString(file.Data);
             ParseJsonData(jsonString);
             chartData = ConvertToChartData(dataList);
+            Selected = file;
             StateHasChanged();
         }
     }
