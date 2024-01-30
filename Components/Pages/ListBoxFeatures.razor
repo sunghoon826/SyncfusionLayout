@@ -8,6 +8,7 @@
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Buttons
 @using System.Text;
 @using System.Text.Json;
 @inject IDatabase<TdmsFile> TdmsFileService
@@ -38,7 +39,7 @@
         </ChildContent>
     </SfSidebar>
     <div id="sidebar-toggle">
-        <SfButton @onclick="Toggle" IsToggle="true" IsPrimary="true">Toggle Sidebar</SfButton>
+        <SfButton @onclick="Toggle" CssClass="custon-btn" IsToggle="true" IsPrimary="true">Toggle Sidebar</SfButton>
     </div>
 </div>
 
