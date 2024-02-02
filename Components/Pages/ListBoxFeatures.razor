@@ -1,4 +1,4 @@
-﻿@page "/syncfusion"
+﻿@page "/"
 @using Syncfusion.Blazor.Navigations
 @using SyncfusionLayout.Interfaces
 @using SyncfusionLayout.Services
@@ -17,8 +17,7 @@
 <PageTitle>SyncfusionChart</PageTitle>
 <h3>SyncfusionChart</h3>
 
-<div id="container">
-    <SfSidebar @ref="sidebarObj" Width="250px" Type="SidebarType.Over" @bind-IsOpen="SidebarToggle">
+@* <div id="container">   
         <ChildContent>
             <div class="sidebar-content">
                 <h4>Select a TDMS File:</h4>
@@ -37,11 +36,8 @@
                 </SfListView>
             </div>
         </ChildContent>
-    </SfSidebar>
-    <div id="sidebar-toggle">
-        <SfButton @onclick="Toggle" CssClass="custon-btn" IsToggle="true" IsPrimary="true">Toggle Sidebar</SfButton>
-    </div>
-</div>
+
+</div> *@
 
 
 <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
@@ -80,7 +76,7 @@
     <SfTextBox @bind-Value="@striplineGap" Input="@TestCode" Placeholder="Enter Stripline Gap"></SfTextBox>
     <SfTextBox @bind-Value="@striplinesEachSide" Input="@TestCode" Placeholder="Enter Striplines Each Side"></SfTextBox>
 </div>
-<style>
+@* <style>
     #listbox-control {
         width: 350px;
         margin: auto;
@@ -111,7 +107,7 @@
             width: 100%;
         }
     }
-</style>
+</style> *@
 
 
 @code {
@@ -126,7 +122,7 @@
     private TdmsFile Selected;
 
     SfSidebar? sidebarObj;
-    public bool SidebarToggle = false;
+ 
 
 
 
@@ -159,10 +155,7 @@
         }
     }
 
-    public void Toggle()
-    {
-        SidebarToggle = !SidebarToggle;
-    }
+  
     private void OnChartMouseClick(ChartMouseEventArgs args)
     {
         double clickedXValue = Convert.ToDouble(args.AxisData["PrimaryXAxis"]);
