@@ -5,6 +5,7 @@
 @using SyncfusionLayout.Models
 @using Syncfusion.Blazor
 @using Syncfusion.Blazor.Lists
+@using Syncfusion.Blazor.Calendars
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.DropDowns
@@ -15,6 +16,8 @@
 @rendermode InteractiveServer
 
 <PageTitle>SyncfusionChart</PageTitle>
+
+<SfDatePicker TValue="DateTime?" @bind-Value="@selectedDate" Format="yyyy-MM-dd" Placeholder="Select a date" Changed="OnDateSelected"></SfDatePicker>
 
 <div class="sidebar-style">
     <div class="sidebar-content">
@@ -33,12 +36,12 @@
         </SfListView>
     </div>
     <div class="pagination-controls">
-        <button @onclick="FirstPage">&lt&lt</button>
-        <button @onclick="PreviousPage">&lt</button>
+        <button @onclick="FirstPage">&lt;&lt;</button>
+        <button @onclick="PreviousPage">&lt;</button>
 
         <span>@currentPage / @totalPages</span>
-        <button @onclick="NextPage">&gt</button>
-        <button @onclick="LastPage">&gt&gt</button>
+        <button @onclick="NextPage">&gt;</button>
+        <button @onclick="LastPage">&gt;&gt;</button>
     </div>
     <div class="page-search">
         <input type="text" @bind="searchedPage" placeholder="Go to page..." />
@@ -126,7 +129,7 @@
     private int pageSize = 10;
     private int totalPages;
     private string searchedPage;
-    // SfSidebar? sidebarObj;
+    private DateTime? selectedDate;
 
     private void LoadPage(int pageNumber)
     {
@@ -209,6 +212,22 @@
         {
             Console.WriteLine($"Error loading files: {ex.Message}");
         }
+    }
+
+
+    private void OnDateSelected(ChangedEventArgs args)
+    {
+        if (selectedDate.HasValue)
+        {
+            var filteredFiles = tdmsFiles.Where(file => file.Date.Date == selectedDate.Value.Date).ToList();
+            pagedTdmsFiles = filteredFiles;
+        }
+        else
+        {
+            LoadPage(currentPage); // If no date is selected, show the current page of the full list
+        }
+
+        StateHasChanged(); // Update the UI
     }
 
     private void OnFileClick(TdmsFile file)
