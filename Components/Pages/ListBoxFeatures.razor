@@ -17,41 +17,48 @@
 
 <PageTitle>SyncfusionChart</PageTitle>
 
-<div class="control-wrapper">
-    <SfDatePicker TValue="DateTime?">
-        <DatePickerEvents TValue="DateTime?" ValueChange="@ValueChangeHandler"></DatePickerEvents>
-    </SfDatePicker>
-</div>
-
 <div class="sidebar-style">
     <div class="sidebar-content">
-        <SfListView DataSource="@pagedTdmsFiles" CssClass="e-list-template">
-            <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
-            <ListViewTemplates TValue="TdmsFile">
-                <Template>
-                    @{
-                        TdmsFile currentData = (TdmsFile)context;
-                        <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
-                            <span class="e-list-item-header">@currentData.FileName @currentData.Date.ToString("yyyy-MM-dd")</span>
-                        </div>
-                    }
-                </Template>
-            </ListViewTemplates>
-        </SfListView>
-    </div>
-    <div class="pagination-controls">
-        <button @onclick="FirstPage">&lt;&lt;</button>
-        <button @onclick="PreviousPage">&lt;</button>
+        <SfSidebar Width="250px"  Animate="false">
+            <ChildContent>
+                <div class="control-wrapper">
+                    <SfDatePicker TValue="DateTime?">
+                        <DatePickerEvents TValue="DateTime?" ValueChange="@ValueChangeHandler"></DatePickerEvents>
+                    </SfDatePicker>
+                </div>
 
-        <span>@currentPage / @totalPages</span>
-        <button @onclick="NextPage">&gt;</button>
-        <button @onclick="LastPage">&gt;&gt;</button>
-    </div>
-    <div class="page-search">
-        <input type="text" @bind="searchedPage" placeholder="Go to page..." />
-        <button @onclick="GoToPage">Go</button>
+                <SfListView DataSource="@pagedTdmsFiles" CssClass="e-list-template">
+                    <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
+                    <ListViewTemplates TValue="TdmsFile">
+                        <Template>
+                            @{
+                                TdmsFile currentData = (TdmsFile)context;
+                                <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
+                                    <span class="e-list-item-header">@currentData.FileName @currentData.Date.ToString("yyyy-MM-dd")</span>
+                                </div>
+                            }
+                        </Template>
+                    </ListViewTemplates>
+                </SfListView>
+
+                <div class="pagination-controls">
+                    <SfButton @onclick="FirstPage">&lt;&lt;</SfButton>
+                    <SfButton @onclick="PreviousPage">&lt;</SfButton>
+
+                    <span>@currentPage / @totalPages</span>
+                    <SfButton @onclick="NextPage">&gt;</SfButton>
+                    <SfButton @onclick="LastPage">&gt;&gt;</SfButton>
+                </div>
+
+                <div class="page-search">
+                    <input type="text" @bind="searchedPage" placeholder="Go to page..." />
+                    <SfButton @onclick="GoToPage">Go</SfButton>
+                </div>
+            </ChildContent>
+        </SfSidebar>
     </div>
 </div>
+
 
 
 <div class="main-content">
@@ -216,7 +223,7 @@
     public void ValueChangeHandler(ChangedEventArgs<DateTime?> args)
     {
         SelectedDate = args.Value;
-        LoadPage(1); // Reload the first page with the new date filter
+        LoadPage(1); 
     }
 
 
