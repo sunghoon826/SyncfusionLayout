@@ -1,4 +1,4 @@
-﻿@page "/syncfusion"
+﻿@page "/"
 @using Syncfusion.Blazor.Navigations
 @using SyncfusionLayout.Interfaces
 @using SyncfusionLayout.Services
@@ -8,110 +8,105 @@
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Buttons
 @using System.Text;
 @using System.Text.Json;
 @inject IDatabase<TdmsFile> TdmsFileService
 @rendermode InteractiveServer
 
 <PageTitle>SyncfusionChart</PageTitle>
-<h3>SyncfusionChart</h3>
 
-<div id="container">
-    <SfSidebar @ref="sidebarObj" Width="250px" Type="SidebarType.Over" @bind-IsOpen="SidebarToggle">
-        <ChildContent>
-            <div class="sidebar-content">
-                <h4>Select a TDMS File:</h4>
-                <SfListView DataSource="@tdmsFiles" CssClass="e-list-template">
-                    <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
-                    <ListViewTemplates TValue="TdmsFile">
-                        <Template>
-                            @{
-                                TdmsFile currentData = (TdmsFile)context;
-                                <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
-                                    <span class="e-list-item-header">@currentData.FileName</span>
-                                </div>
-                            }
-                        </Template>
-                    </ListViewTemplates>
-                </SfListView>
-            </div>
-        </ChildContent>
-    </SfSidebar>
-    <div id="sidebar-toggle">
-        <SfButton @onclick="Toggle" IsToggle="true" IsPrimary="true">Toggle Sidebar</SfButton>
+<div class="sidebar-style">
+    <div class="sidebar-content">
+        <SfListView DataSource="@pagedTdmsFiles" CssClass="e-list-template">
+            <ListViewFieldSettings TValue="TdmsFile" Id="Id" Text="FileName"></ListViewFieldSettings>
+            <ListViewTemplates TValue="TdmsFile">
+                <Template>
+                    @{
+                        TdmsFile currentData = (TdmsFile)context;
+                        <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
+                            <span class="e-list-item-header">@currentData.FileName</span>
+                        </div>
+                    }
+                </Template>
+            </ListViewTemplates>
+        </SfListView>
+    </div>
+    <div class="pagination-controls">
+        <button @onclick="FirstPage">&lt&lt</button>
+        <button @onclick="PreviousPage">&lt</button>
+
+        <span>@currentPage / @totalPages</span>
+        <button @onclick="NextPage">&gt</button>
+        <button @onclick="LastPage">&gt&gt</button>
+    </div>
+    <div class="page-search">
+        <input type="text" @bind="searchedPage" placeholder="Go to page..." />
+        <button @onclick="GoToPage">Go</button>
     </div>
 </div>
 
 
-<SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
-    <ChartEvents ChartMouseClick="@OnChartMouseClick" /> @* ChartMouseClick 이벤트 추가 *@
-    <ChartArea>
-        <ChartAreaBorder Width="0" />
-    </ChartArea>
-    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
-        @if (isClicked)
-        {
-            foreach (var position in striplinePositions)
+<div class="main-content">
+    <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
+        <ChartEvents ChartMouseClick="@OnChartMouseClick" />
+        <ChartArea>
+            <ChartAreaBorder Width="0" />
+        </ChartArea>
+        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
+            @if (isClicked)
             {
-                <ChartStriplines>
-                    <ChartStripline Start="@position" Size="1" SizeType="SizeType.Pixel" Color="red"></ChartStripline>
-                </ChartStriplines>
+                foreach (var position in striplinePositions)
+                {
+                    <ChartStriplines>
+                        <ChartStripline Start="@position" Size="1" SizeType="SizeType.Pixel" Color="red"></ChartStripline>
+                    </ChartStriplines>
+                }
             }
-        }
-        <ChartAxisMajorGridLines Width="0" />
-        <ChartAxisMajorTickLines Width="0" />
-        <ChartAxisCrosshairTooltip Enable="true" />
-    </ChartPrimaryXAxis>
-    <ChartPrimaryYAxis Maximum="0.1">
-        <ChartAxisLineStyle Width="0" />
-        <ChartAxisMajorTickLines Width="0" />
-        <ChartAxisCrosshairTooltip Enable="true" />
-    </ChartPrimaryYAxis>
-    <ChartCrosshairSettings Enable="true" LineType="LineType.Both" />
-    <ChartTooltipSettings Enable="true" />
-    <ChartLegendSettings EnableHighlight="true" />
-    <ChartSeriesCollection>
-        <ChartSeries DataSource="@chartData" XName="Time" YName="Value" Type="ChartSeriesType.Spline">
-        </ChartSeries>
-    </ChartSeriesCollection>
-</SfChart>
-<div>
-    <SfTextBox @bind-Value="@striplineGap" Input="@TestCode" Placeholder="Enter Stripline Gap"></SfTextBox>
-    <SfTextBox @bind-Value="@striplinesEachSide" Input="@TestCode" Placeholder="Enter Striplines Each Side"></SfTextBox>
+            <ChartAxisMajorGridLines Width="0" />
+            <ChartAxisMajorTickLines Width="0" />
+            <ChartAxisCrosshairTooltip Enable="true" />
+        </ChartPrimaryXAxis>
+        <ChartPrimaryYAxis Maximum="0.1">
+            <ChartAxisLineStyle Width="0" />
+            <ChartAxisMajorTickLines Width="0" />
+            <ChartAxisCrosshairTooltip Enable="true" />
+        </ChartPrimaryYAxis>
+        <ChartCrosshairSettings Enable="true" LineType="LineType.Both" />
+        <ChartTooltipSettings Enable="true" />
+        <ChartLegendSettings EnableHighlight="true" />
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@chartData" XName="Time" YName="Value" Type="ChartSeriesType.Spline">
+            </ChartSeries>
+        </ChartSeriesCollection>
+    </SfChart>
+    <div>
+        <SfTextBox @bind-Value="@striplineGap" Input="@TestCode" Placeholder="Enter Stripline Gap"></SfTextBox>
+        <SfTextBox @bind-Value="@striplinesEachSide" Input="@TestCode" Placeholder="Enter Striplines Each Side"></SfTextBox>
+    </div>
 </div>
+
 <style>
-    #listbox-control {
-        width: 350px;
-        margin: auto;
-        padding-top: 35px;
-        padding-bottom: 35px;
+    .sidebar-style {
+        width: 220px;
+        float: left;
+        background-color: #9c9c9c;
     }
-    #listbox-control ul {
-        list-style-type: none;
-        padding: 0;
+
+    .main-content {
+        margin-left: 220px;
     }
-    .list-item {
-        padding: 10px;
-        margin-bottom: 5px;
-        background-color: #f0f0f0;
-        border: 1px solid #ddd;
-        cursor: pointer;
-        transition: background-color 0.3s, box-shadow 0.3s;
+
+    .content {
+        margin-left: 0;
+        transition: margin-left .5s;
     }
-    .list-item:hover {
-        background-color: #e0e0e0;
-    }
-    .list-item:active {
-        background-color: #d0d0d0;
-        box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-    }
-   {
-        #listbox-control {
-            width: 100%;
-        }
+
+    .pagination-controls {
+        text-align: center;
+        margin-top: 20px;
     }
 </style>
-
 
 @code {
     private List<TdmsFile> tdmsFiles;
@@ -120,24 +115,94 @@
     private double clickedPosition; // 클릭된 위치의 X축 값 저장
     private bool isClicked = false; // 클릭 여부 확인
     private List<double> striplinePositions = new List<double>(); // Stripline 위치를 저장하는 리스트
-    private string striplineGap = "100"; // Default gap as string
-    private string striplinesEachSide = "7"; // Default number of striplines each side as string
+    private string striplineGap = "100";
+    private string striplinesEachSide = "7";
     private TdmsFile Selected;
 
-    SfSidebar? sidebarObj;
-    public bool SidebarToggle = false;
 
 
+    private List<TdmsFile> pagedTdmsFiles = new List<TdmsFile>();
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages;
+    private string searchedPage;
+    // SfSidebar? sidebarObj;
 
+    private void LoadPage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        var skip = (currentPage - 1) * pageSize;
+        pagedTdmsFiles = tdmsFiles.Skip(skip).Take(pageSize).ToList();
+        StateHasChanged(); // UI 업데이트
+    }
+    private void PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            UpdatePagedTdmsFiles();
+        }
+    }
+
+    private void NextPage()
+    {
+        var totalPages = (int)Math.Ceiling(tdmsFiles.Count / (double)pageSize);
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            UpdatePagedTdmsFiles();
+        }
+    }
+    private void FirstPage()
+    {
+        currentPage = 1;
+        UpdatePagedTdmsFiles();
+    }
+
+    private void LastPage()
+    {
+        var totalPages = (int)Math.Ceiling(tdmsFiles.Count / (double)pageSize);
+        currentPage = totalPages;
+        UpdatePagedTdmsFiles();
+    }
+    private void GoToPage()
+    {
+        if (int.TryParse(searchedPage, out int pageNumber))
+        {
+            var totalPages = (int)Math.Ceiling(tdmsFiles.Count / (double)pageSize);
+            if (pageNumber >= 1 && pageNumber <= totalPages)
+            {
+                currentPage = pageNumber;
+                UpdatePagedTdmsFiles();
+            }
+            else
+            {
+                // 사용자에게 입력한 페이지 번호가 범위를 벗어났음을 알림
+            }
+        }
+        else
+        {
+            // 사용자에게 유효한 페이지 번호를 입력하라는 메시지를 표시
+        }
+    }
+    private void UpdatePagedTdmsFiles()
+    {
+        var skip = (currentPage - 1) * pageSize;
+        pagedTdmsFiles = tdmsFiles.Skip(skip).Take(pageSize).ToList();
+    }
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            tdmsFiles = new List<TdmsFile>();
-            var files = await TdmsFileService.GetAsync();
-            if (files != null)
+            // 데이터베이스에서 TdmsFile 리스트를 비동기적으로 로드
+            tdmsFiles = await TdmsFileService.GetAsync();
+            if (tdmsFiles != null)
             {
-                tdmsFiles.AddRange(files);
+                // 총 페이지 수 계산
+                totalPages = (int)Math.Ceiling((double)tdmsFiles.Count / pageSize);
+
+                // 첫 페이지 데이터 로드
+                LoadPage(currentPage);
             }
         }
         catch (Exception ex)
@@ -158,10 +223,6 @@
         }
     }
 
-    public void Toggle()
-    {
-        SidebarToggle = !SidebarToggle;
-    }
     private void OnChartMouseClick(ChartMouseEventArgs args)
     {
         double clickedXValue = Convert.ToDouble(args.AxisData["PrimaryXAxis"]);
@@ -169,11 +230,12 @@
         isClicked = true;
         StateHasChanged();
     }
-    private void ApplyStriplineSettings()
+
+    private void TestCode()
     {
-        isClicked = true;
         StateHasChanged();
     }
+
 
     private void CalculateStriplinePositions(double clickedPosition)
     {
@@ -208,10 +270,6 @@
         }
 
         return closestIndex;
-    }
-    private string ConvertToUtf8String(byte[] data)
-    {
-        return Encoding.UTF8.GetString(data);
     }
 
     private void ParseJsonData(string json)
@@ -248,14 +306,5 @@
             time += 1;
         }
         return chartDataList;
-    }
-    private void TestCode(InputEventArgs args)
-    {
-        StateHasChanged();
-    }
-    public class ChartData
-    {
-        public double Time { get; set; }
-        public double Value { get; set; }
     }
 }

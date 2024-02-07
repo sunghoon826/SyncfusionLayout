@@ -9,4 +9,6 @@ public partial class TdmsFile
     public string FileName { get; set; } = null!;
 
     public byte[] Data { get; set; } = null!;
+
+    public DateTime Date { get; set; }
 }
