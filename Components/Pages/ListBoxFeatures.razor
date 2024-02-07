@@ -17,7 +17,11 @@
 
 <PageTitle>SyncfusionChart</PageTitle>
 
-<SfDatePicker TValue="DateTime?" @bind-Value="@selectedDate" Format="yyyy-MM-dd" Placeholder="Select a date" Changed="OnDateSelected"></SfDatePicker>
+<div class="control-wrapper">
+    <SfDatePicker TValue="DateTime?">
+        <DatePickerEvents TValue="DateTime?" ValueChange="@ValueChangeHandler"></DatePickerEvents>
+    </SfDatePicker>
+</div>
 
 <div class="sidebar-style">
     <div class="sidebar-content">
@@ -121,8 +125,7 @@
     private string striplineGap = "100";
     private string striplinesEachSide = "7";
     private TdmsFile Selected;
-
-
+    private DateTime? SelectedDate;
 
     private List<TdmsFile> pagedTdmsFiles = new List<TdmsFile>();
     private int currentPage = 1;
@@ -131,13 +134,7 @@
     private string searchedPage;
     private DateTime? selectedDate;
 
-    private void LoadPage(int pageNumber)
-    {
-        currentPage = pageNumber;
-        var skip = (currentPage - 1) * pageSize;
-        pagedTdmsFiles = tdmsFiles.Skip(skip).Take(pageSize).ToList();
-        StateHasChanged(); // UI 업데이트
-    }
+
     private void PreviousPage()
     {
         if (currentPage > 1)
@@ -206,6 +203,7 @@
 
                 // 첫 페이지 데이터 로드
                 LoadPage(currentPage);
+                StateHasChanged();
             }
         }
         catch (Exception ex)
@@ -215,19 +213,28 @@
     }
 
 
-    private void OnDateSelected(ChangedEventArgs args)
+    public void ValueChangeHandler(ChangedEventArgs<DateTime?> args)
     {
-        if (selectedDate.HasValue)
+        SelectedDate = args.Value;
+        LoadPage(1); // Reload the first page with the new date filter
+    }
+
+
+    private void LoadPage(int pageNumber)
+    {
+        currentPage = pageNumber;
+        var skip = (currentPage - 1) * pageSize;
+
+        if (SelectedDate.HasValue)
         {
-            var filteredFiles = tdmsFiles.Where(file => file.Date.Date == selectedDate.Value.Date).ToList();
-            pagedTdmsFiles = filteredFiles;
+            pagedTdmsFiles = tdmsFiles.Where(file => file.Date.Date == SelectedDate.Value.Date).Skip(skip).Take(pageSize).ToList();
         }
         else
         {
-            LoadPage(currentPage); // If no date is selected, show the current page of the full list
+            pagedTdmsFiles = tdmsFiles.Skip(skip).Take(pageSize).ToList();
         }
 
-        StateHasChanged(); // Update the UI
+        StateHasChanged(); // UI 업데이트
     }
 
     private void OnFileClick(TdmsFile file)
