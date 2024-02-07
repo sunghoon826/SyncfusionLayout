@@ -25,7 +25,7 @@
                     @{
                         TdmsFile currentData = (TdmsFile)context;
                         <div class="e-list-wrapper e-list-multi-line" @onclick="(e => OnFileClick(currentData))">
-                            <span class="e-list-item-header">@currentData.FileName</span>
+                            <span class="e-list-item-header">@currentData.FileName @currentData.Date.ToString("yyyy-MM-dd")</span>
                         </div>
                     }
                 </Template>
