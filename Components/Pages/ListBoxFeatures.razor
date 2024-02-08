@@ -44,7 +44,6 @@
                 <div class="pagination-controls">
                     <SfButton @onclick="FirstPage">&lt;&lt;</SfButton>
                     <SfButton @onclick="PreviousPage">&lt;</SfButton>
-
                     <span>@currentPage / @totalPages</span>
                     <SfButton @onclick="NextPage">&gt;</SfButton>
                     <SfButton @onclick="LastPage">&gt;&gt;</SfButton>
@@ -58,8 +57,6 @@
         </SfSidebar>
     </div>
 </div>
-
-
 
 <div class="main-content">
     <SfChart ID="chart" Width="100%" Height="100%" Title="TDMS Data Chart">
@@ -139,9 +136,7 @@
     private int pageSize = 10;
     private int totalPages;
     private string searchedPage;
-    private DateTime? selectedDate;
-
-
+   
     private void PreviousPage()
     {
         if (currentPage > 1)
@@ -160,6 +155,7 @@
             UpdatePagedTdmsFiles();
         }
     }
+
     private void FirstPage()
     {
         currentPage = 1;
@@ -172,6 +168,7 @@
         currentPage = totalPages;
         UpdatePagedTdmsFiles();
     }
+
     private void GoToPage()
     {
         if (int.TryParse(searchedPage, out int pageNumber))
@@ -192,16 +189,18 @@
             // 사용자에게 유효한 페이지 번호를 입력하라는 메시지를 표시
         }
     }
+
     private void UpdatePagedTdmsFiles()
     {
         var skip = (currentPage - 1) * pageSize;
         pagedTdmsFiles = tdmsFiles.Skip(skip).Take(pageSize).ToList();
     }
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // 데이터베이스에서 TdmsFile 리스트를 비동기적으로 로드
+            // 데이터베이스에서 TdmsFile 리스트를 비동기적으로 로드 -> 여기서 전체를 가져오면 안됨.
             tdmsFiles = await TdmsFileService.GetAsync();
             if (tdmsFiles != null)
             {
@@ -219,13 +218,11 @@
         }
     }
 
-
     public void ValueChangeHandler(ChangedEventArgs<DateTime?> args)
     {
         SelectedDate = args.Value;
         LoadPage(1); 
     }
-
 
     private void LoadPage(int pageNumber)
     {
@@ -268,7 +265,6 @@
     {
         StateHasChanged();
     }
-
 
     private void CalculateStriplinePositions(double clickedPosition)
     {
