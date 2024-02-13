@@ -19,7 +19,7 @@
 
 <div class="sidebar-style">
     <div class="sidebar-content">
-        <SfSidebar Width="250px"  Animate="false">
+        <SfSidebar Width="250px" Animate="false">
             <ChildContent>
                 <div class="control-wrapper">
                     <SfDatePicker TValue="DateTime?">
@@ -136,7 +136,7 @@
     private int pageSize = 10;
     private int totalPages;
     private string searchedPage;
-   
+
     private void PreviousPage()
     {
         if (currentPage > 1)
@@ -198,30 +198,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            // 데이터베이스에서 TdmsFile 리스트를 비동기적으로 로드 -> 여기서 전체를 가져오면 안됨.
-            tdmsFiles = await TdmsFileService.GetAsync();
-            if (tdmsFiles != null)
-            {
-                // 총 페이지 수 계산
-                totalPages = (int)Math.Ceiling((double)tdmsFiles.Count / pageSize);
+        SelectedDate = DateTime.UtcNow; // Set the current date as UTC
+        await LoadDataForSelectedDate();
+    }
 
-                // 첫 페이지 데이터 로드
-                LoadPage(currentPage);
-                StateHasChanged();
-            }
-        }
-        catch (Exception ex)
+    public async Task ValueChangeHandler(ChangedEventArgs<DateTime?> args)
+    {
+        SelectedDate = args.Value;
+        await LoadDataForSelectedDate(); // 선택된 날짜에 해당하는 데이터를 불러옵니다.
+    }
+    private async Task LoadDataForSelectedDate()
+    {
+        if (SelectedDate.HasValue)
         {
-            Console.WriteLine($"Error loading files: {ex.Message}");
+            tdmsFiles = await TdmsFileService.GetAsync(SelectedDate.Value.ToUniversalTime());
+            if (tdmsFiles.Any())
+            {
+                totalPages = (int)Math.Ceiling((double)tdmsFiles.Count / pageSize);
+                LoadPage(currentPage);
+            }
+            else
+            {
+                pagedTdmsFiles.Clear();
+            }
+            StateHasChanged();
         }
     }
 
-    public void ValueChangeHandler(ChangedEventArgs<DateTime?> args)
+    public async Task OnDateSelected(ChangedEventArgs<DateTime?> args)
     {
         SelectedDate = args.Value;
-        LoadPage(1); 
+        await LoadDataForSelectedDate();
     }
 
     private void LoadPage(int pageNumber)

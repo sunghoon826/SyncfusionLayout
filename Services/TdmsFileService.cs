@@ -12,21 +12,30 @@ namespace SyncfusionLayout.Services
             _context = context;
         }
 
-        public async Task<List<TdmsFile>> GetAsync()
+        public async Task<List<TdmsFile>> GetAsync(DateTime? date = null)
         {
-            return await _context.TdmsFiles.ToListAsync();
+            if (!date.HasValue)
+            {
+                // 날짜가 제공되지 않았으므로 빈 리스트 반환
+                return new List<TdmsFile>();
+            }
+
+            // 제공된 날짜에 해당하는 데이터만 조회
+            var targetDate = date.Value.Date; // 날짜 부분만 가져오기
+            return await _context.TdmsFiles
+                                 .Where(file => file.Date.Date == targetDate)
+                                 .ToListAsync();
         }
+
 
         public TdmsFile GetDetail(int? id)
         {
             if (id == null)
+            {
                 throw new ArgumentNullException(nameof(id), "ID cannot be null.");
+            }
 
-            if (_context?.TdmsFiles == null)
-                throw new InvalidOperationException("Database context not initialized.");
-
-            var file = _context.TdmsFiles.Find(id);
-            return file; // 여기서 필요한 경우 추가 처리를 수행
+            return _context.TdmsFiles.Find(id);
         }
     }
 
